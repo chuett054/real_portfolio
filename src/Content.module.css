@@ -1,0 +1,145 @@
+.printPage {
+  position: relative;
+}
+
+.printBackgroundImage {
+  display: none;
+  width: 100%;
+}
+
+.printContent {
+  position: relative;
+}
+
+.tight li {
+  margin-bottom: 10px;
+}
+
+.headerIntro {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.nameHeading {
+  position: static;
+  left: auto;
+  bottom: auto;
+}
+
+.epetriText {
+  font-family: 'Epetri', 'Main', sans-serif;
+}
+
+.inlineEpetri {
+  font-family: 'Epetri', 'Main', sans-serif;
+}
+
+.fontToggleButton {
+  border: 1px solid #000000;
+  background: #ffffff;
+  color: #000000;
+  padding: 4px 8px;
+  font: inherit;
+  font-family: 'Main', sans-serif;
+  font-size: 0.45em;
+  margin-bottom: 8px;
+  line-height: 1.1;
+  cursor: pointer;
+}
+
+.fontMeaningNote {
+  margin: 6px 0 0;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  font-family: 'Main', sans-serif;
+  font-size: 0.38em;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.noteLine {
+  display: block;
+}
+
+.fontMeaningNote a {
+  margin-left: 10px;
+}
+
+.footerQuoteEpetri {
+  margin: 6px 0 2px;
+  font-size: 0.8em;
+  line-height: 1.2;
+}
+
+.footerQuotePlain {
+  margin: 0 0 10px;
+  font-family: 'Main', sans-serif;
+  font-size: 0.5em;
+  line-height: 1.3;
+}
+
+@media only screen and (max-width: 767px) {
+  .headerIntro {
+    bottom: 0;
+  }
+
+  .nameRow {
+    gap: 8px;
+  }
+
+  .fontToggleButton {
+    font-size: 0.55em;
+    margin-bottom: 4px;
+  }
+
+  .fontMeaningNote {
+    max-width: none;
+    font-size: 0.45em;
+  }
+
+  .footerQuoteEpetri {
+    font-size: 0.9em;
+  }
+
+  .footerQuotePlain {
+    font-size: 0.65em;
+  }
+}
+
+@media print {
+  .printPage {
+    width: 8.5in;
+    height: 11in;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .printBackgroundImage {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    object-fit: cover;
+    object-position: top center;
+    z-index: 0;
+  }
+
+  .printContent {
+    display: none;
+  }
+}
