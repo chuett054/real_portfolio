@@ -1,7 +1,318 @@
 import * as React from 'react';
 import styles from './Content.module.css';
 
+const EXPERIENCE_ENTRIES = [
+  {
+    slug: 'cloudflare',
+    date: 'Summer 2026',
+    company: 'Cloudflare',
+    location: 'San Francisco',
+    role: 'Product Manager Intern',
+    detailIntro: 'Summer 2026 @ Cloudflare',
+    detailSummary: 'incoming 2026, Stay tuned',
+    focus: [
+      'Drive product discovery with clear user and business outcomes.',
+      'Partner across engineering and design to ship scoped features.',
+      'Use feedback and metrics to prioritize what ships next.',
+    ],
+  },
+  {
+    slug: 'travelers',
+    date: 'Summer 2025',
+    company: 'Travelers Insurance',
+    location: 'Minneapolis',
+    role: 'Product & Software Engineering Intern',
+    detailIntro: 'Summer 2025 at travelers',
+    detailSummary: 'incoming 2025, Stay tuned',
+    focus: [
+      'Bridge product requirements with implementation details.',
+      'Support delivery by writing and validating production code.',
+      'Tighten iteration loops with partner and stakeholder feedback.',
+    ],
+  },
+  {
+    slug: 'tokenbridge',
+    date: '2025',
+    company: 'Tokenbridge',
+    location: 'Remote',
+    role: 'Product Manager',
+    detailIntro: '2025 @ Tokenbridge',
+    detailSummary: 'Stay tuned',
+    focus: [
+      'Set roadmap direction around the highest-value user problems.',
+      'Coordinate technical execution across product and infra priorities.',
+      'Shape feature releases around clarity, reliability, and trust.',
+    ],
+  },
+  {
+    slug: 'sassa',
+    date: '2024',
+    company: 'SASSA',
+    location: 'Remote',
+    role: 'Product Intern',
+    detailIntro: '2024 @ SASSA',
+    detailSummary: 'Stay tuned',
+    focus: [
+      'Contribute to discovery, prioritization, and sprint planning.',
+      'Turn feedback into clear specs and actionable next steps.',
+      'Help ship features with faster decision-making and alignment.',
+    ],
+  },
+];
+
+const EXPERIENCE_BY_SLUG = EXPERIENCE_ENTRIES.reduce((map, experience) => {
+  map[experience.slug] = experience;
+  return map;
+}, {});
+
+function getExperienceSlugFromHash(hash) {
+  if (!hash) {
+    return null;
+  }
+
+  const normalizedHash = hash.replace(/^#\/?/, '');
+  const [route, slug] = normalizedHash.split('/');
+
+  if (route !== 'experience' || !slug) {
+    return null;
+  }
+
+  return EXPERIENCE_BY_SLUG[slug] ? slug : null;
+}
+
+const HOME_SCROLL_STORAGE_KEY = 'home-scroll-y';
+
+function getCurrentScrollY() {
+  return (
+    window.scrollY ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop ||
+    0
+  );
+}
+
+function rememberHomeScrollDepth() {
+  try {
+    sessionStorage.setItem(HOME_SCROLL_STORAGE_KEY, String(getCurrentScrollY()));
+  } catch {
+    // No-op if storage is unavailable.
+  }
+}
+
+function restoreHomeScrollDepth() {
+  let storedValue = null;
+
+  try {
+    storedValue = sessionStorage.getItem(HOME_SCROLL_STORAGE_KEY);
+  } catch {
+    return;
+  }
+
+  if (storedValue === null) {
+    return;
+  }
+
+  const targetScroll = Number(storedValue);
+  if (!Number.isFinite(targetScroll)) {
+    try {
+      sessionStorage.removeItem(HOME_SCROLL_STORAGE_KEY);
+    } catch {
+      // No-op if storage is unavailable.
+    }
+    return;
+  }
+
+  const applyScroll = () => window.scrollTo(0, Math.max(targetScroll, 0));
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      applyScroll();
+      window.requestAnimationFrame(applyScroll);
+    });
+  });
+
+  try {
+    sessionStorage.removeItem(HOME_SCROLL_STORAGE_KEY);
+  } catch {
+    // No-op if storage is unavailable.
+  }
+}
+
 function Face() {
+  const [isEpetriActive, setIsEpetriActive] = React.useState(false);
+  const [activeExperienceSlug, setActiveExperienceSlug] = React.useState(() =>
+    getExperienceSlugFromHash(window.location.hash),
+  );
+  const printContentRef = React.useRef(null);
+
+  const activeExperience = activeExperienceSlug
+    ? EXPERIENCE_BY_SLUG[activeExperienceSlug]
+    : null;
+
+  React.useEffect(() => {
+    function getElementFromNode(node) {
+      if (!node) {
+        return null;
+      }
+
+      return node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+    }
+
+    function findAncestor(node, predicate) {
+      let element = getElementFromNode(node);
+
+      while (element) {
+        if (predicate(element)) {
+          return element;
+        }
+        element = element.parentElement;
+      }
+
+      return null;
+    }
+
+    function findInlineWrapper(node) {
+      return findAncestor(node, (element) => element.dataset.epetriInline === 'true');
+    }
+
+    function unwrapInlineEpetri(wrapper) {
+      const parent = wrapper.parentNode;
+      if (!parent) {
+        return;
+      }
+
+      while (wrapper.firstChild) {
+        parent.insertBefore(wrapper.firstChild, wrapper);
+      }
+      parent.removeChild(wrapper);
+      parent.normalize();
+    }
+
+    function handleShortcut(event) {
+      const isPrimaryShortcut =
+        (event.metaKey || event.ctrlKey) && event.shiftKey && !event.altKey;
+      const isFallbackShortcut =
+        !event.metaKey && !event.ctrlKey && event.shiftKey && !event.altKey;
+
+      if (
+        event.key.toLowerCase() !== 'x' ||
+        (!isPrimaryShortcut && !isFallbackShortcut)
+      ) {
+        return;
+      }
+
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+        return;
+      }
+
+      const range = selection.getRangeAt(0);
+      if (
+        !printContentRef.current ||
+        !printContentRef.current.contains(range.commonAncestorContainer)
+      ) {
+        return;
+      }
+
+      const anchorWrapper = findInlineWrapper(selection.anchorNode);
+      const focusWrapper = findInlineWrapper(selection.focusNode);
+
+      event.preventDefault();
+
+      if (anchorWrapper && anchorWrapper === focusWrapper) {
+        unwrapInlineEpetri(anchorWrapper);
+        selection.removeAllRanges();
+        return;
+      }
+
+      const wrapper = document.createElement('span');
+      wrapper.dataset.epetriInline = 'true';
+      wrapper.style.fontFamily = "'Epetri', 'Main', sans-serif";
+
+      try {
+        range.surroundContents(wrapper);
+      } catch {
+        const fragment = range.extractContents();
+        wrapper.appendChild(fragment);
+        range.insertNode(wrapper);
+      }
+
+      const updatedRange = document.createRange();
+      updatedRange.selectNodeContents(wrapper);
+      selection.removeAllRanges();
+      selection.addRange(updatedRange);
+    }
+
+    document.addEventListener('keydown', handleShortcut);
+    return () => document.removeEventListener('keydown', handleShortcut);
+  }, []);
+
+  React.useEffect(() => {
+    function handleHashChange() {
+      const experienceSlug = getExperienceSlugFromHash(window.location.hash);
+      setActiveExperienceSlug(experienceSlug);
+
+      if (experienceSlug) {
+        window.scrollTo(0, 0);
+        return;
+      }
+
+      restoreHomeScrollDepth();
+    }
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  function handleExperienceLinkClick() {
+    rememberHomeScrollDepth();
+  }
+
+  function handleBackArrowClick() {
+    window.location.hash = '/';
+  }
+
+  if (activeExperience) {
+    return (
+      <main className={styles.printPage}>
+        <img
+          className={styles.printBackgroundImage}
+          src="/cube.svg"
+          alt="Printable website"
+          aria-hidden="true"
+        />
+        <div className={styles.printContent} ref={printContentRef}>
+          <div className={styles.experienceDetailOnly}>
+            <button
+              type="button"
+              className={styles.backArrowButton}
+              onClick={handleBackArrowClick}
+              aria-label="Back to home"
+            >
+              ←
+            </button>
+            <p className={styles.experienceDetailLead}>
+              {activeExperience.detailIntro}
+            </p>
+            <p className={styles.experienceDetailSub}>
+              {activeExperience.detailSummary}
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className={styles.printPage}>
       <img
@@ -10,166 +321,128 @@ function Face() {
         alt="Printable website"
         aria-hidden="true"
       />
-      <div className={styles.printContent}>
+      <div className={styles.printContent} ref={printContentRef}>
         <header>
-          <h1>Sharon Zheng</h1>
-        </header>
-
-        <div className={styles.container}>
-          <article>
-            <ul>
-              <li>
-                Creative Technologist — Making art in the digital and print
-                worlds
-              </li>
-
-              <li>sharzheng@gmail.com</li>
-              <li>
+          <div className={styles.headerIntro}>
+            <div className={styles.nameRow}>
+              <h1
+                className={
+                  isEpetriActive
+                    ? `${styles.nameHeading} ${styles.epetriText}`
+                    : styles.nameHeading
+                }
+              >
+                Cole Huetten
+              </h1>
+              <button
+                type="button"
+                className={styles.fontToggleButton}
+                onClick={() => setIsEpetriActive((previous) => !previous)}
+              >
+                {isEpetriActive ? 'translate back' : 'switch script'}
+              </button>
+            </div>
+            {isEpetriActive ? (
+              <p className={styles.fontMeaningNote}>
+                <span className={styles.noteLine}>
+                  "Atypography is an art movement that graphically represents
+                  traditional writing systems in an unconventional way, creating
+                  an authentic design that remains readable while concealing
+                  text signs at first glance.
+                </span>
+                <span className={styles.noteLine}>
+                  Highlight selected text and press Command+Shift+X to toggle
+                  Atypography on or off for any text on this page."
+                </span>
                 <a
-                  href="https://instagram.com/sharon"
+                  href="https://www.youtube.com/watch?v=0LOHB28lWIE"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  instagram.com/sharon
+                  Learn more
+                </a>
+              </p>
+            ) : null}
+          </div>
+        </header>
+
+        <div className={styles.container}>
+          <article className={isEpetriActive ? styles.epetriText : undefined}>
+            <ul>
+              <li>
+                Builder/PM — All things tech, crypto, infra
+              </li>
+
+              <li>huett054@umn.edu</li>
+              <li>
+                <a
+                  href="https://x.com/HuettenCol46630"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  x.com/colehuetten
                 </a>
               </li>
             </ul>
           </article>
 
           <section>
-            <h2>Project Shortlist</h2>
-            <hr />
-            <section>
-              <article>
-                <ul>
-                  <li>
-                    <a
-                      href="https://sushiaipod.vercel.app/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      ai爱pod
-                    </a>{' '}
-                    &mdash; Photo gallery inspired by the iPod Classic,
-                    featuring the{' '}
-                    <a
-                      href="https://www.sushiai-rwc.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Sushi Ai
-                    </a>{' '}
-                    omakase experience in Redwood City
-                  </li>
-                  <li>
-                    <a
-                      href="https://ur-aura.sharonzheng.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      UR–AURA
-                    </a>{' '}
-                    &mdash; An digital aura photo booth and in-person
-                    experience. Visit a pop-up IRL to purchase your aura photo
-                    and companion guidebook
-                  </li>
-                  <li>
-                    <a
-                      href="https://www.printedmatter.org/catalog/publisher/17545"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      How to Play Mahjong
-                    </a>{' '}
-                    &mdash; An instruction manual about the traditional Chinese
-                    game of Mahjong as taught to me by my family. Hosted
-                    multiple community events, including at{' '}
-                    <a
-                      href="https://sfdesignweek.org/event/mahjong-the-intersections-of-tradition-community-and-craft"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      San Francisco Design Week
-                    </a>
-                    . Limited edition stickers available{' '}
-                    <a
-                      href="https://sharonxsherman.myshopify.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      here
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="https://skinsshark.github.io/yeet-hay"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Yeet Hay or Yeet Nay?
-                    </a>{' '}
-                    &mdash; Bringing analog to digital in a new reading format.
-                    Riso-printed zine available at{' '}
-                    <a
-                      href="https://www.printedmatter.org/catalog/publisher/17545"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Printed Matter
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="https://the-offisse.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      The Offisse
-                    </a>{' '}
-                    &mdash; High-end fashion inspired by The Office (US)
-                  </li>
-                  <li>
-                    <a
-                      href="https://skinsshark.github.io/kwaterloo"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Kitchener/Waterloo
-                    </a>{' '}
-                    &mdash; Commemorating my college experience with a list of
-                    favorite places around town
-                  </li>
-                </ul>
-              </article>
-            </section>
-          </section>
-
-          <section>
             <h2>Work Experience</h2>
             <hr />
 
             <article>
-              <ul className={styles.tight}>
+              <ul className={`${styles.tight} ${styles.experienceList}`}>
+                {EXPERIENCE_ENTRIES.map((experience) => (
+                  <li key={experience.slug}>
+                    <a
+                      href={`#/experience/${experience.slug}`}
+                      className={styles.experienceCardLink}
+                      onClick={handleExperienceLinkClick}
+                    >
+                      <sup>{experience.date}</sup>
+                      {experience.company}, {experience.location} &mdash;{' '}
+                      <i>{experience.role}</i>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </article>
+          </section>
+
+          <section>
+            <h2>Project Shortlist</h2>
+            <hr />
+            <article>
+              <ul>
                 <li>
-                  <sup>2025</sup>
-                  Gamma, San Francisco &mdash; <i>Design Engineer</i>
+                  <a
+                    href="https://token-bridge.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Tokenbridge
+                  </a>{' '}
+                  &mdash; Fair finance for all
                 </li>
                 <li>
-                  <sup>2023</sup>
-                  Magical Tome, San Francisco &mdash; <i>Front End Engineer</i>
+                  <a
+                    href="https://ur-aura.sharonzheng.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    MEV Detection
+                  </a>{' '}
+                  &mdash; Catching scammers
                 </li>
                 <li>
-                  <sup>2018</sup>
-                  Meta, San Francisco/New York/London &mdash;{' '}
-                  <i>Front End Engineer</i>
-                </li>
-                <li>
-                  <sup>2018</sup>
-                  Lyft, Seattle &mdash; <i>Software Engineer Intern</i>
-                </li>
-                <li>
-                  <sup>2017</sup>
-                  Apple, Sunnyvale &mdash; <i>Software Engineer Intern</i>
+                  <a
+                    href="https://www.notion.so/Wildfire-Grid-Navigator-225ed4d3de3f80d19551c9cd1950da23?source=copy_link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Wildfire Map
+                  </a>{' '}
+                  &mdash; Saving people from wildfires
                 </li>
               </ul>
             </article>
@@ -180,242 +453,16 @@ function Face() {
             <hr />
 
             <article>
-              <ul>
-                <li>
-                  <sup>2024</sup>
-                  <a
-                    href="https://sharon.metalabel.com/aiphabet"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Aiphabet
-                  </a>{' '}
-                  &mdash; Free, printable zine created using Stable Diffusion
-                </li>
-                <li>
-                  <sup>2024</sup>
-                  <a
-                    href="https://imscared.sharonzheng.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Mom Come Pick Me Up, I'm Scared
-                  </a>{' '}
-                  &mdash; A tool to visualize your crowd at a public speaking
-                  event
-                </li>
-                <li>
-                  <sup>2023</sup>
-                  <a
-                    href="https://pokemon-eat.vercel.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Pokémon Eat
-                  </a>{' '}
-                  &mdash; Meal planning for Snorlax using your ingredients in
-                  Pokemon Sleep. Offline mode available
-                </li>
-                <li>
-                  <sup>2020</sup>
-                  <a
-                    href="https://social-distance-online.vercel.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Social Distance This for Me
-                  </a>{' '}
-                  &mdash; Easy-to-add script for your website so we can get the
-                  internet to social distance too
-                </li>
-                <li>
-                  <sup>2019</sup>
-                  <a
-                    href="https://skinsshark.github.io/tachi"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Tachi
-                  </a>{' '}
-                  &mdash; Photo gallery of a small omakase experience in Toronto
-                </li>
-                <li>
-                  <sup>2019</sup>
-                  <a
-                    href="https://skinsshark.github.io/see-attle"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Seattle
-                  </a>
-                  ,{' '}
-                  <a
-                    href="https://skinsshark.github.io/winyc"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    New York City
-                  </a>
-                  ,{' '}
-                  <a
-                    href="https://skinsshark.github.io/london-2019"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    London
-                  </a>{' '}
-                  &mdash; City guides for towns I have lived in, Bay Area
-                  edition in the works
-                </li>
-                <li>
-                  <sup>2018</sup>
-                  <a
-                    href="https://medium.com/@sharonzheng"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    A How-to Guide For the Modern World
-                  </a>{' '}
-                  &mdash; Articles on Medium covering a range of topics,
-                  including my design process, technical project tutorials, and
-                  my dad
-                </li>
-                <li>
-                  <sup>2018</sup>
-                  <a
-                    href="https://iloveyouandyoulove.me"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    ILYYLM (I Love You, You Love Me)
-                  </a>{' '}
-                  &mdash; Valentine's Day project to send e-cards to all your
-                  lovers
-                </li>
-                <li>
-                  <sup>2017</sup>
-                  <a
-                    href="https://github.com/skinsshark/waterflow"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Waterflow
-                  </a>{' '}
-                  &mdash; Chrome extension to streamline course selection at the
-                  University of Waterloo
-                </li>
-                <li>
-                  <sup>2017</sup>
-                  <a
-                    href="https://sunday-desert.github.io/holiday-swim"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Holiday Swim
-                  </a>{' '}
-                  &mdash; Generated phone wallpapers featuring the fish from The
-                  Illustrated Encyclopedia of Fish launched the previous year.{' '}
-                  <a
-                    href="https://leviv.cool/projects/2022/01/30/All-I-want-for-christmas.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Inspired others to create fun internet experiences
-                  </a>
-                </li>
-              </ul>
+              <p>"soon"</p>
             </article>
-
-            <div>
-              <p>
-                Full list available on{' '}
-                <a
-                  href="https://github.com/skinsshark/skinsshark.github.io/blob/master/README.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  GitHub
-                </a>
-              </p>
-            </div>
           </section>
 
           <section>
             <h2>In-Person Events</h2>
             <hr />
-            <section>
-              <article>
-                <ul>
-                  <li>
-                    December 19-21, 2025 &mdash; Sharon Zine at{' '}
-                    <a
-                      href="https://tokyoartbookfair.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Tokyo Art Book Fair
-                    </a>
-                  </li>
-                  <li>
-                    September 25, 2025 &mdash; Sharon Zine at{' '}
-                    <a
-                      href="https://adobe.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Adobe
-                    </a>{' '}
-                    AAPI Marketplace
-                  </li>
-                  <li>
-                    June 14, 2025 &mdash; UR-AURA at{' '}
-                    <a
-                      href="https://www.bigwestwinefest.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Big West Wine Fest
-                    </a>{' '}
-                    in Guerneville, CA
-                  </li>
-                  <li>
-                    May 10-11, 2025 &mdash; Sharon Zine at{' '}
-                    <a
-                      href="https://www.instagram.com/p/DIUBZ1Nugpt/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Basilica Farm & Flea
-                    </a>{' '}
-                    in Upstate NY
-                  </li>
-                  <li>
-                    February 1, 2025 &mdash; UR-AURA at{' '}
-                    <a
-                      href="https://www.eventbrite.com/e/neo-lunar-lunar-new-year-reimagined-tickets-1124707453269?aff=vendors"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Neo Lunar: LNY Reimagined
-                    </a>{' '}
-                    in Oakland
-                  </li>
-                </ul>
-              </article>
-
-              <div>
-                <p>
-                  Full list available on{' '}
-                  <a
-                    href="https://github.com/skinsshark/skinsshark.github.io/blob/master/EVENTS.md"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    GitHub
-                  </a>
-                </p>
-              </div>
-            </section>
+            <article>
+              <p>"when im famous"</p>
+            </article>
           </section>
 
           <section>
@@ -425,9 +472,9 @@ function Face() {
             <article>
               <div>
                 <h3>
-                  Bachelor of Applied Science, Computer Engineering&mdash;{' '}
+                  Bachelor of Science, Computer Science&mdash;{' '}
                   <br />
-                  University of Waterloo
+                  University of Minnesota
                 </h3>
               </div>
             </article>
@@ -440,26 +487,10 @@ function Face() {
             <article>
               <div>
                 <p>
-                  Visiting contemporary art museums, volunteering around the
-                  city (currently at{' '}
-                  <a
-                    href="http://www.adobebooks.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Adobe Books
-                  </a>
-                  ), giving generous ratings on{' '}
-                  <a
-                    href="https://letterboxd.com/szszs/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Letterboxd
-                  </a>
-                  , running for utility but not for fun, playing Just Dance on
-                  Wii, trying to guess your zodiac sign, furniture shopping,
-                  white tea, and black coffee
+                  Stopping kids from gambling, serving justice, tokenization,
+                  making unfair things fair, stopping or punishing for crime,
+                  traveling with no return flight, promoting individualism,
+                  reading, Formula 1, dogs.
                 </p>
               </div>
             </article>
@@ -472,21 +503,17 @@ function Face() {
             rel="noopener noreferrer">
             PDF Version (last updated: Aug 2020)
           </a> */}
-            <p>☆</p>
+            <p className={`${styles.epetriText} ${styles.footerQuoteEpetri}`}>
+              "we can all be different and time still goes on"
+            </p>
+            <p className={styles.footerQuotePlain}>
+              We can all be different and time still goes on.
+            </p>
             <p>Happy to chat, reach out!</p>
             <ul>
               <li>
                 <a
-                  href="https://venmo.com/sharzheng"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Venmo
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://linkedin.com/in/zhengsharon"
+                  href="https://www.linkedin.com/in/colehuetten/"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

@@ -7,29 +7,74 @@ function calcValues() {
   const centerContent = document.getElementById('center-content');
   const centerFold = document.getElementById('center-fold');
 
-  const overflowHeight = centerContent.clientHeight - centerFold.clientHeight;
+  if (!centerContent || !centerFold) {
+    return;
+  }
 
-  document.body.style.height = overflowHeight + window.innerHeight + 'px';
+  const overflowHeight = Math.max(
+    centerContent.clientHeight - centerFold.clientHeight,
+    0,
+  );
+
+  document.body.style.height = `${overflowHeight + window.innerHeight}px`;
+}
+
+function syncFoldTransforms() {
   const foldsContent = Array.from(
     document.querySelectorAll('[data-fold-content="true"]'),
   );
-  const tick = () => {
-    const scroll = -(
-      document.documentElement.scrollTop || document.body.scrollTop
-    );
-    foldsContent.forEach(content => {
-      content.style.transform = `translateY(${scroll}px)`;
-    });
-    requestAnimationFrame(tick);
-  };
+  const scroll = -(
+    document.documentElement.scrollTop || document.body.scrollTop
+  );
 
-  tick();
+  foldsContent.forEach(content => {
+    content.style.transform = `translateY(${scroll}px)`;
+  });
 }
 
 function App() {
   useEffect(() => {
-    window.addEventListener('resize', calcValues);
-    calcValues();
+    const recalcLayout = () => {
+      calcValues();
+      syncFoldTransforms();
+    };
+
+    const recalcAfterHashChange = () => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(recalcLayout);
+      });
+    };
+
+    let frameId = null;
+    let resizeObserver = null;
+
+    const tick = () => {
+      syncFoldTransforms();
+      frameId = window.requestAnimationFrame(tick);
+    };
+
+    window.addEventListener('resize', recalcLayout);
+    window.addEventListener('hashchange', recalcAfterHashChange);
+
+    const centerContent = document.getElementById('center-content');
+    if (centerContent && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(recalcLayout);
+      resizeObserver.observe(centerContent);
+    }
+
+    recalcAfterHashChange();
+    frameId = window.requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener('resize', recalcLayout);
+      window.removeEventListener('hashchange', recalcAfterHashChange);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
   }, []);
 
   return (
