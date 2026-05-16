@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/static/css/main.2f518043.css",
+    "main.js": "/static/js/main.3786e17b.js",
+    "static/media/Epetri-TITE-anorexic3.otf": "/static/media/Epetri-TITE-anorexic3.d053369876cdcc856616.otf",
+    "index.html": "/index.html",
+    "main.2f518043.css.map": "/static/css/main.2f518043.css.map",
+    "main.3786e17b.js.map": "/static/js/main.3786e17b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2f518043.css",
+    "static/js/main.3786e17b.js"
+  ]
+}
