@@ -366,7 +366,7 @@ function Face() {
               <li>huett054@umn.edu</li>
               <li>
                 <a
-                  href="https://x.com/HuettenCol46630"
+                  href="https://x.com/ColeHuetten"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
