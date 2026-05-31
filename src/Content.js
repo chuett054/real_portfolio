@@ -8,54 +8,42 @@ const EXPERIENCE_ENTRIES = [
     company: 'Cloudflare',
     location: 'San Francisco',
     role: 'Product Manager Intern',
-    detailIntro: 'Summer 2026 @ Cloudflare',
-    detailSummary: 'incoming 2026, Stay tuned',
-    focus: [
-      'Drive product discovery with clear user and business outcomes.',
-      'Partner across engineering and design to ship scoped features.',
-      'Use feedback and metrics to prioritize what ships next.',
-    ],
+    detailIntro: 'On the AI search team. Coming Summer 2026.',
   },
   {
     slug: 'travelers',
     date: 'Summer 2025',
     company: 'Travelers Insurance',
     location: 'Minneapolis',
-    role: 'Product & Software Engineering Intern',
-    detailIntro: 'Summer 2025 at travelers',
-    detailSummary: 'incoming 2025, Stay tuned',
+    role: 'Software Engineering Intern',
+    detailIntro: "I built the interfaces insurance adjusters use to process AI-assisted claims, about 150 a day.",
     focus: [
-      'Bridge product requirements with implementation details.',
-      'Support delivery by writing and validating production code.',
-      'Tighten iteration loops with partner and stakeholder feedback.',
+      "Sat in on adjuster sessions, watched where things broke, and shipped fixes.",
+      "Also handled security. Rolled out secret scanning across the whole team before anything could leak.",
     ],
   },
   {
-    slug: 'tokenbridge',
+    slug: 'umn-research',
     date: '2025',
-    company: 'Tokenbridge',
-    location: 'Remote',
-    role: 'Product Manager',
-    detailIntro: '2025 @ Tokenbridge',
-    detailSummary: 'Stay tuned',
+    company: 'University of Minnesota',
+    location: 'Minneapolis',
+    role: 'Undergraduate Researcher',
+    detailIntro: "Tried to answer: what would it actually take to put the U Card on your phone?",
     focus: [
-      'Set roadmap direction around the highest-value user problems.',
-      'Coordinate technical execution across product and infra priorities.',
-      'Shape feature releases around clarity, reliability, and trust.',
+      "Talked to 50 people across students, IT, facilities, and admin to figure out what needed to work.",
+      "96% of students said they'd just leave their physical card home if mobile access existed.",
     ],
   },
   {
     slug: 'sassa',
-    date: '2024',
+    date: 'Summer 2024',
     company: 'SASSA',
-    location: 'Remote',
-    role: 'Product Intern',
-    detailIntro: '2024 @ SASSA',
-    detailSummary: 'Stay tuned',
+    location: 'Minneapolis',
+    role: 'Software Engineering Intern',
+    detailIntro: "Teachers were struggling to find usable datasets for their classrooms. I built something to fix that.",
     focus: [
-      'Contribute to discovery, prioritization, and sprint planning.',
-      'Turn feedback into clear specs and actionable next steps.',
-      'Help ship features with faster decision-making and alignment.',
+      "Used Claude to sort through 3,000+ datasets and tag them by grade level, subject, and how you'd actually teach with them.",
+      "What used to take days of emailing the university now takes a few minutes.",
     ],
   },
 ];
@@ -304,9 +292,13 @@ function Face() {
             <p className={styles.experienceDetailLead}>
               {activeExperience.detailIntro}
             </p>
-            <p className={styles.experienceDetailSub}>
-              {activeExperience.detailSummary}
-            </p>
+            {activeExperience.focus && activeExperience.focus.length > 0 ? (
+              <ul className={styles.experienceDetailList}>
+                {activeExperience.focus.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ) : null}
           </div>
         </div>
       </main>
@@ -369,9 +361,7 @@ function Face() {
         <div className={styles.container}>
           <article className={isEpetriActive ? styles.epetriText : undefined}>
             <ul>
-              <li>
-                Builder/PM — All things tech, crypto, infra
-              </li>
+              <li>All things tech</li>
 
               <li>huett054@umn.edu</li>
               <li>
@@ -426,16 +416,6 @@ function Face() {
                 </li>
                 <li>
                   <a
-                    href="https://ur-aura.sharonzheng.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    MEV Detection
-                  </a>{' '}
-                  &mdash; Catching scammers
-                </li>
-                <li>
-                  <a
                     href="https://www.notion.so/Wildfire-Grid-Navigator-225ed4d3de3f80d19551c9cd1950da23?source=copy_link"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -453,7 +433,7 @@ function Face() {
             <hr />
 
             <article>
-              <p>"soon"</p>
+              <p>soon</p>
             </article>
           </section>
 
@@ -461,7 +441,7 @@ function Face() {
             <h2>In-Person Events</h2>
             <hr />
             <article>
-              <p>"when im famous"</p>
+              <p>soon</p>
             </article>
           </section>
 

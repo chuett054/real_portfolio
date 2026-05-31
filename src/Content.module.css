@@ -139,6 +139,14 @@
   margin: 0;
 }
 
+.experienceDetailList {
+  margin-top: 24px;
+}
+
+.experienceDetailList li {
+  margin-bottom: 18px;
+}
+
 @media only screen and (max-width: 767px) {
   .headerIntro {
     bottom: 0;
