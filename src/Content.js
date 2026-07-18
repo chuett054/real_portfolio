@@ -8,7 +8,7 @@ const EXPERIENCE_ENTRIES = [
     company: 'Cloudflare',
     location: 'San Francisco',
     role: 'Product Manager Intern',
-    detailIntro: 'On the AI search team. Coming Summer 2026.',
+    readTime: '1 minute read',
   },
   {
     slug: 'travelers',
@@ -16,35 +16,24 @@ const EXPERIENCE_ENTRIES = [
     company: 'Travelers Insurance',
     location: 'Minneapolis',
     role: 'Software Engineering Intern',
-    detailIntro: "I built the interfaces insurance adjusters use to process AI-assisted claims, about 150 a day.",
-    focus: [
-      "Sat in on adjuster sessions, watched where things broke, and shipped fixes.",
-      "Also handled security. Rolled out secret scanning across the whole team before anything could leak.",
-    ],
-  },
-  {
-    slug: 'umn-research',
-    date: '2025',
-    company: 'University of Minnesota',
-    location: 'Minneapolis',
-    role: 'Undergraduate Researcher',
-    detailIntro: "Tried to answer: what would it actually take to put the U Card on your phone?",
-    focus: [
-      "Talked to 50 people across students, IT, facilities, and admin to figure out what needed to work.",
-      "96% of students said they'd just leave their physical card home if mobile access existed.",
-    ],
+    readTime: '1 minute read',
   },
   {
     slug: 'sassa',
-    date: 'Summer 2024',
+    date: '2024',
     company: 'SASSA',
     location: 'Minneapolis',
     role: 'Software Engineering Intern',
-    detailIntro: "Teachers were struggling to find usable datasets for their classrooms. I built something to fix that.",
-    focus: [
-      "Used Claude to sort through 3,000+ datasets and tag them by grade level, subject, and how you'd actually teach with them.",
-      "What used to take days of emailing the university now takes a few minutes.",
-    ],
+    readTime: '1 minute read',
+  },
+];
+
+const BLOG_ENTRIES = [
+  {
+    slug: 'introducing-cole',
+    title: 'Introducing Cole',
+    date: 'July 17, 2026',
+    readTime: '3 minute read',
   },
 ];
 
@@ -53,7 +42,12 @@ const EXPERIENCE_BY_SLUG = EXPERIENCE_ENTRIES.reduce((map, experience) => {
   return map;
 }, {});
 
-function getExperienceSlugFromHash(hash) {
+const BLOG_BY_SLUG = BLOG_ENTRIES.reduce((map, post) => {
+  map[post.slug] = post;
+  return map;
+}, {});
+
+function getRouteFromHash(hash) {
   if (!hash) {
     return null;
   }
@@ -61,11 +55,15 @@ function getExperienceSlugFromHash(hash) {
   const normalizedHash = hash.replace(/^#\/?/, '');
   const [route, slug] = normalizedHash.split('/');
 
-  if (route !== 'experience' || !slug) {
-    return null;
+  if (route === 'experience' && slug && EXPERIENCE_BY_SLUG[slug]) {
+    return { type: 'experience', slug };
   }
 
-  return EXPERIENCE_BY_SLUG[slug] ? slug : null;
+  if (route === 'blog' && slug && BLOG_BY_SLUG[slug]) {
+    return { type: 'blog', slug };
+  }
+
+  return null;
 }
 
 const HOME_SCROLL_STORAGE_KEY = 'home-scroll-y';
@@ -126,131 +124,42 @@ function restoreHomeScrollDepth() {
   }
 }
 
+function buildExperienceArticle(experience) {
+  return {
+    slug: experience.slug,
+    title: experience.company,
+    subtitle: experience.role,
+    date: experience.date,
+    readTime: experience.readTime,
+  };
+}
+
+function getActiveArticle(route) {
+  if (!route) {
+    return null;
+  }
+
+  if (route.type === 'blog') {
+    return BLOG_BY_SLUG[route.slug] || null;
+  }
+
+  const experience = EXPERIENCE_BY_SLUG[route.slug];
+  return experience ? buildExperienceArticle(experience) : null;
+}
+
 function Face() {
-  const [isEpetriActive, setIsEpetriActive] = React.useState(false);
-  const [activeExperienceSlug, setActiveExperienceSlug] = React.useState(() =>
-    getExperienceSlugFromHash(window.location.hash),
+  const [activeRoute, setActiveRoute] = React.useState(() =>
+    getRouteFromHash(window.location.hash),
   );
-  const printContentRef = React.useRef(null);
 
-  const activeExperience = activeExperienceSlug
-    ? EXPERIENCE_BY_SLUG[activeExperienceSlug]
-    : null;
-
-  React.useEffect(() => {
-    function getElementFromNode(node) {
-      if (!node) {
-        return null;
-      }
-
-      return node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
-    }
-
-    function findAncestor(node, predicate) {
-      let element = getElementFromNode(node);
-
-      while (element) {
-        if (predicate(element)) {
-          return element;
-        }
-        element = element.parentElement;
-      }
-
-      return null;
-    }
-
-    function findInlineWrapper(node) {
-      return findAncestor(node, (element) => element.dataset.epetriInline === 'true');
-    }
-
-    function unwrapInlineEpetri(wrapper) {
-      const parent = wrapper.parentNode;
-      if (!parent) {
-        return;
-      }
-
-      while (wrapper.firstChild) {
-        parent.insertBefore(wrapper.firstChild, wrapper);
-      }
-      parent.removeChild(wrapper);
-      parent.normalize();
-    }
-
-    function handleShortcut(event) {
-      const isPrimaryShortcut =
-        (event.metaKey || event.ctrlKey) && event.shiftKey && !event.altKey;
-      const isFallbackShortcut =
-        !event.metaKey && !event.ctrlKey && event.shiftKey && !event.altKey;
-
-      if (
-        event.key.toLowerCase() !== 'x' ||
-        (!isPrimaryShortcut && !isFallbackShortcut)
-      ) {
-        return;
-      }
-
-      const target = event.target;
-      if (
-        target instanceof HTMLElement &&
-        (target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-        return;
-      }
-
-      const range = selection.getRangeAt(0);
-      if (
-        !printContentRef.current ||
-        !printContentRef.current.contains(range.commonAncestorContainer)
-      ) {
-        return;
-      }
-
-      const anchorWrapper = findInlineWrapper(selection.anchorNode);
-      const focusWrapper = findInlineWrapper(selection.focusNode);
-
-      event.preventDefault();
-
-      if (anchorWrapper && anchorWrapper === focusWrapper) {
-        unwrapInlineEpetri(anchorWrapper);
-        selection.removeAllRanges();
-        return;
-      }
-
-      const wrapper = document.createElement('span');
-      wrapper.dataset.epetriInline = 'true';
-      wrapper.style.fontFamily = "'Epetri', 'Main', sans-serif";
-
-      try {
-        range.surroundContents(wrapper);
-      } catch {
-        const fragment = range.extractContents();
-        wrapper.appendChild(fragment);
-        range.insertNode(wrapper);
-      }
-
-      const updatedRange = document.createRange();
-      updatedRange.selectNodeContents(wrapper);
-      selection.removeAllRanges();
-      selection.addRange(updatedRange);
-    }
-
-    document.addEventListener('keydown', handleShortcut);
-    return () => document.removeEventListener('keydown', handleShortcut);
-  }, []);
+  const activeArticle = getActiveArticle(activeRoute);
 
   React.useEffect(() => {
     function handleHashChange() {
-      const experienceSlug = getExperienceSlugFromHash(window.location.hash);
-      setActiveExperienceSlug(experienceSlug);
+      const route = getRouteFromHash(window.location.hash);
+      setActiveRoute(route);
 
-      if (experienceSlug) {
+      if (route) {
         window.scrollTo(0, 0);
         return;
       }
@@ -262,7 +171,7 @@ function Face() {
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  function handleExperienceLinkClick() {
+  function handleDetailLinkClick() {
     rememberHomeScrollDepth();
   }
 
@@ -270,7 +179,7 @@ function Face() {
     window.location.hash = '/';
   }
 
-  if (activeExperience) {
+  if (activeArticle) {
     return (
       <main className={styles.printPage}>
         <img
@@ -279,8 +188,8 @@ function Face() {
           alt="Printable website"
           aria-hidden="true"
         />
-        <div className={styles.printContent} ref={printContentRef}>
-          <div className={styles.experienceDetailOnly}>
+        <div className={styles.printContent}>
+          <article className={styles.blogArticle}>
             <button
               type="button"
               className={styles.backArrowButton}
@@ -289,17 +198,16 @@ function Face() {
             >
               ←
             </button>
-            <p className={styles.experienceDetailLead}>
-              {activeExperience.detailIntro}
-            </p>
-            {activeExperience.focus && activeExperience.focus.length > 0 ? (
-              <ul className={styles.experienceDetailList}>
-                {activeExperience.focus.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            ) : null}
-          </div>
+            <div className={styles.blogHeader}>
+              <h1 className={styles.blogTitle}>{activeArticle.title}</h1>
+              {activeArticle.subtitle ? (
+                <p className={styles.blogSubtitle}>{activeArticle.subtitle}</p>
+              ) : null}
+              <p className={styles.blogMeta}>
+                {activeArticle.date} · {activeArticle.readTime}
+              </p>
+            </div>
+          </article>
         </div>
       </main>
     );
@@ -313,56 +221,18 @@ function Face() {
         alt="Printable website"
         aria-hidden="true"
       />
-      <div className={styles.printContent} ref={printContentRef}>
+      <div className={styles.printContent}>
         <header>
           <div className={styles.headerIntro}>
             <div className={styles.nameRow}>
-              <h1
-                className={
-                  isEpetriActive
-                    ? `${styles.nameHeading} ${styles.epetriText}`
-                    : styles.nameHeading
-                }
-              >
-                Cole Huetten
-              </h1>
-              <button
-                type="button"
-                className={styles.fontToggleButton}
-                onClick={() => setIsEpetriActive((previous) => !previous)}
-              >
-                {isEpetriActive ? 'translate back' : 'switch script'}
-              </button>
+              <h1 className={styles.nameHeading}>Cole Huetten</h1>
             </div>
-            {isEpetriActive ? (
-              <p className={styles.fontMeaningNote}>
-                <span className={styles.noteLine}>
-                  "Atypography is an art movement that graphically represents
-                  traditional writing systems in an unconventional way, creating
-                  an authentic design that remains readable while concealing
-                  text signs at first glance.
-                </span>
-                <span className={styles.noteLine}>
-                  Highlight selected text and press Command+Shift+X to toggle
-                  Atypography on or off for any text on this page."
-                </span>
-                <a
-                  href="https://www.youtube.com/watch?v=0LOHB28lWIE"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Learn more
-                </a>
-              </p>
-            ) : null}
           </div>
         </header>
 
         <div className={styles.container}>
-          <article className={isEpetriActive ? styles.epetriText : undefined}>
+          <article>
             <ul>
-              <li>All things tech</li>
-
               <li>huett054@umn.edu</li>
               <li>
                 <a
@@ -371,6 +241,13 @@ function Face() {
                   rel="noopener noreferrer"
                 >
                   x.com/colehuetten
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/colehuetten/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  LinkedIn
                 </a>
               </li>
             </ul>
@@ -387,11 +264,24 @@ function Face() {
                     <a
                       href={`#/experience/${experience.slug}`}
                       className={styles.experienceCardLink}
-                      onClick={handleExperienceLinkClick}
+                      onClick={handleDetailLinkClick}
                     >
-                      <sup>{experience.date}</sup>
-                      {experience.company}, {experience.location} &mdash;{' '}
-                      <i>{experience.role}</i>
+                      <span className={styles.cardMain}>
+                        <span className={styles.cardTitle}>
+                          {experience.role}
+                        </span>
+                        <span className={styles.cardSub}>
+                          {experience.company}
+                        </span>
+                      </span>
+                      <span className={styles.cardMeta}>
+                        <span className={styles.cardMetaPrimary}>
+                          {experience.location}
+                        </span>
+                        <span className={styles.cardMetaSecondary}>
+                          {experience.date}
+                        </span>
+                      </span>
                     </a>
                   </li>
                 ))}
@@ -400,48 +290,32 @@ function Face() {
           </section>
 
           <section>
-            <h2>Project Shortlist</h2>
+            <h2>Blog</h2>
             <hr />
             <article>
-              <ul>
-                <li>
-                  <a
-                    href="https://token-bridge.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Tokenbridge
-                  </a>{' '}
-                  &mdash; Fair finance for all
-                </li>
-                <li>
-                  <a
-                    href="https://www.notion.so/Wildfire-Grid-Navigator-225ed4d3de3f80d19551c9cd1950da23?source=copy_link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Wildfire Map
-                  </a>{' '}
-                  &mdash; Saving people from wildfires
-                </li>
+              <ul className={`${styles.tight} ${styles.experienceList}`}>
+                {BLOG_ENTRIES.map((post) => (
+                  <li key={post.slug}>
+                    <a
+                      href={`#/blog/${post.slug}`}
+                      className={styles.experienceCardLink}
+                      onClick={handleDetailLinkClick}
+                    >
+                      <span className={styles.cardMain}>
+                        <span className={styles.cardTitle}>{post.title}</span>
+                      </span>
+                      <span className={styles.cardMeta}>
+                        <span className={styles.cardMetaPrimary}>
+                          {post.date}
+                        </span>
+                        <span className={styles.cardMetaSecondary}>
+                          {post.readTime}
+                        </span>
+                      </span>
+                    </a>
+                  </li>
+                ))}
               </ul>
-            </article>
-          </section>
-
-          <section>
-            <h2>Archive</h2>
-            <hr />
-
-            <article>
-              <p>soon</p>
-            </article>
-          </section>
-
-          <section>
-            <h2>In-Person Events</h2>
-            <hr />
-            <article>
-              <p>soon</p>
             </article>
           </section>
 
@@ -450,13 +324,23 @@ function Face() {
             <hr />
 
             <article>
-              <div>
-                <h3>
-                  Bachelor of Science, Computer Science&mdash;{' '}
-                  <br />
-                  University of Minnesota
-                </h3>
-              </div>
+              <ul className={`${styles.tight} ${styles.experienceList}`}>
+                <li>
+                  <div className={styles.experienceCardStatic}>
+                    <span className={styles.cardMain}>
+                      <span className={styles.cardTitle}>
+                        Bachelor of Science, Computer Science
+                      </span>
+                      <span className={styles.cardSub}>
+                        University of Minnesota
+                      </span>
+                    </span>
+                    <span className={styles.cardMeta}>
+                      <span className={styles.cardMetaPrimary}>Minneapolis</span>
+                    </span>
+                  </div>
+                </li>
+              </ul>
             </article>
           </section>
 
@@ -466,7 +350,7 @@ function Face() {
 
             <article>
               <div>
-                <p>
+                <p className={styles.likesText}>
                   Stopping kids from gambling, serving justice, tokenization,
                   making unfair things fair, stopping or punishing for crime,
                   traveling with no return flight, promoting individualism,
@@ -476,32 +360,7 @@ function Face() {
             </article>
           </section>
 
-          <footer>
-            {/* <a
-            href="https://drive.google.com/file/d/1xVoUFY164g3bh-2nKuJ_k3JcYntWvHYd/view?usp=sharing"
-            target="_blank"
-            rel="noopener noreferrer">
-            PDF Version (last updated: Aug 2020)
-          </a> */}
-            <p className={`${styles.epetriText} ${styles.footerQuoteEpetri}`}>
-              "we can all be different and time still goes on"
-            </p>
-            <p className={styles.footerQuotePlain}>
-              We can all be different and time still goes on.
-            </p>
-            <p>Happy to chat, reach out!</p>
-            <ul>
-              <li>
-                <a
-                  href="https://www.linkedin.com/in/colehuetten/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  LinkedIn
-                </a>
-              </li>
-            </ul>
-          </footer>
+          <footer />
         </div>
       </div>
     </main>

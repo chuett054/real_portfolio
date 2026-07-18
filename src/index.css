@@ -2,14 +2,6 @@
   --main-bg-color: #fff;
 }
 
-@font-face {
-  font-family: 'Epetri';
-  src: url('./fonts/Epetri-TITE-anorexic3.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
 ::selection {
   background: #0a84ff;
   color: #ffffff;
