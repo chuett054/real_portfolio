@@ -4,48 +4,106 @@ import styles from './Content.module.css';
 const EXPERIENCE_ENTRIES = [
   {
     slug: 'cloudflare',
+    year: '2026',
     date: 'Summer 2026',
     company: 'Cloudflare',
     location: 'San Francisco',
     role: 'Product Manager Intern',
-    readTime: '1 minute read',
+    bullets: [], // add details here
+  },
+  {
+    slug: 'dis-copenhagen',
+    year: '2026',
+    date: 'Spring 2026',
+    company: 'DIS Copenhagen',
+    location: 'Copenhagen',
+    role: 'Undergraduate Researcher, LLM Safety',
+    bullets: [], // add details here
   },
   {
     slug: 'travelers',
+    year: '2025',
     date: 'Summer 2025',
     company: 'Travelers Insurance',
     location: 'Minneapolis',
     role: 'Software Engineering Intern',
-    readTime: '1 minute read',
+    bullets: [], // add details here
   },
   {
     slug: 'sassa',
+    year: '2024',
     date: '2024',
     company: 'SASSA',
     location: 'Minneapolis',
     role: 'Software Engineering Intern',
-    readTime: '1 minute read',
+    bullets: [], // add details here
   },
 ];
 
-const BLOG_ENTRIES = [
+const SIDE_QUEST_ENTRIES = [
   {
-    slug: 'introducing-cole',
-    title: 'Introducing Cole',
-    date: 'July 17, 2026',
-    readTime: '3 minute read',
+    slug: 'ironman',
+    year: '2026',
+    company: 'Ironman Training',
+    blurb: 'Training to swim, bike, and run an Ironman triathlon',
+    bullets: [], // add details here
+  },
+  {
+    slug: 'boom-supersonic',
+    year: '2026',
+    date: '2026 – Present',
+    company: 'Boom Supersonic Challenge',
+    blurb: 'Building a small jet to fly supersonic',
+    bullets: [], // add details here
+  },
+  {
+    slug: 'de-googling',
+    year: '2026',
+    company: 'De-Googling',
+    blurb: "I replaced most Google apps with private, self-hosted versions",
+    bullets: [], // add details here
+  },
+  {
+    slug: 'tokenbridge',
+    year: '2025',
+    company: 'Tokenbridge',
+    blurb: 'I started a company that helps students pay for school',
+    bullets: [], // add details here
+  },
+  {
+    slug: 'blackout-detail',
+    year: '2022',
+    date: '2022 – 2023',
+    company: 'Blackout Detail',
+    blurb: "I started and ran a company that cleaned cars at the customer's home",
+    bullets: [], // add details here
   },
 ];
 
-const EXPERIENCE_BY_SLUG = EXPERIENCE_ENTRIES.reduce((map, experience) => {
-  map[experience.slug] = experience;
-  return map;
-}, {});
+const EDUCATION_ENTRIES = [
+  {
+    year: '2027',
+    school: 'University of Minnesota',
+    degree: 'B.A. in Computer Science, Minor in Economics',
+    location: 'Minneapolis',
+    date: 'Expected May 2027',
+  },
+  {
+    year: '2026',
+    school: 'DIS Copenhagen',
+    degree: 'Study Abroad',
+    location: 'Copenhagen, Denmark',
+    date: 'Jan 2026 – May 2026',
+  },
+];
 
-const BLOG_BY_SLUG = BLOG_ENTRIES.reduce((map, post) => {
-  map[post.slug] = post;
-  return map;
-}, {});
+const ENTRY_BY_SLUG = [...EXPERIENCE_ENTRIES, ...SIDE_QUEST_ENTRIES].reduce(
+  (map, entry) => {
+    map[entry.slug] = entry;
+    return map;
+  },
+  {},
+);
 
 function getRouteFromHash(hash) {
   if (!hash) {
@@ -55,12 +113,8 @@ function getRouteFromHash(hash) {
   const normalizedHash = hash.replace(/^#\/?/, '');
   const [route, slug] = normalizedHash.split('/');
 
-  if (route === 'experience' && slug && EXPERIENCE_BY_SLUG[slug]) {
+  if (route === 'experience' && slug && ENTRY_BY_SLUG[slug]?.bullets) {
     return { type: 'experience', slug };
-  }
-
-  if (route === 'blog' && slug && BLOG_BY_SLUG[slug]) {
-    return { type: 'blog', slug };
   }
 
   return null;
@@ -124,27 +178,80 @@ function restoreHomeScrollDepth() {
   }
 }
 
-function buildExperienceArticle(experience) {
-  return {
-    slug: experience.slug,
-    title: experience.company,
-    subtitle: experience.role,
-    date: experience.date,
-    readTime: experience.readTime,
-  };
+function EntryDetail({ entry, onBack }) {
+  const meta = [entry.date || entry.year, entry.location].filter(Boolean);
+
+  return (
+    <article className={styles.detailPage}>
+      <button type="button" className={styles.backButton} onClick={onBack}>
+        <span className={styles.backArrow} aria-hidden="true">
+          ←
+        </span>
+        Back
+      </button>
+
+      <header className={styles.detailHeader}>
+        {meta.length ? (
+          <p className={styles.detailMeta}>{meta.join(' · ')}</p>
+        ) : null}
+        <h1 className={styles.detailTitle}>{entry.company}</h1>
+        {entry.role ? <p className={styles.detailRole}>{entry.role}</p> : null}
+      </header>
+
+      {entry.bullets.length ? (
+        <ul className={styles.detailList}>
+          {entry.bullets.map((bullet) => (
+            <li key={bullet}>{bullet}</li>
+          ))}
+        </ul>
+      ) : null}
+    </article>
+  );
 }
 
-function getActiveArticle(route) {
-  if (!route) {
-    return null;
-  }
+function EntryRow({ entry, onClick, plain }) {
+  const body = (
+    <>
+      <span className={styles.rowText}>
+        <sup>{entry.year}</sup>
+        <span className={styles.rowTitle}>{entry.company}</span>
+        {entry.blurb ? (
+          <span className={styles.rowBlurb}>{entry.blurb}</span>
+        ) : null}
+        {entry.location ? `, ${entry.location}` : null}
+        {entry.role ? (
+          <>
+            {' '}
+            — <i>{entry.role}</i>
+          </>
+        ) : null}
+      </span>
+      {entry.bullets ? (
+        <span className={styles.rowArrow} aria-hidden="true">
+          →
+        </span>
+      ) : null}
+    </>
+  );
 
-  if (route.type === 'blog') {
-    return BLOG_BY_SLUG[route.slug] || null;
-  }
-
-  const experience = EXPERIENCE_BY_SLUG[route.slug];
-  return experience ? buildExperienceArticle(experience) : null;
+  // Entries without bullets have no detail page, so they render as a static card.
+  return (
+    <li className={styles.rowItem}>
+      {entry.bullets ? (
+        <a
+          href={`#/experience/${entry.slug}`}
+          className={`${styles.row} ${styles.rowLink}`}
+          onClick={onClick}
+        >
+          {body}
+        </a>
+      ) : (
+        <div className={`${styles.row} ${plain ? styles.rowPlain : ''}`}>
+          {body}
+        </div>
+      )}
+    </li>
+  );
 }
 
 function Face() {
@@ -152,7 +259,7 @@ function Face() {
     getRouteFromHash(window.location.hash),
   );
 
-  const activeArticle = getActiveArticle(activeRoute);
+  const activeEntry = activeRoute ? ENTRY_BY_SLUG[activeRoute.slug] : null;
 
   React.useEffect(() => {
     function handleHashChange() {
@@ -179,7 +286,7 @@ function Face() {
     window.location.hash = '/';
   }
 
-  if (activeArticle) {
+  if (activeEntry) {
     return (
       <main className={styles.printPage}>
         <img
@@ -189,25 +296,7 @@ function Face() {
           aria-hidden="true"
         />
         <div className={styles.printContent}>
-          <article className={styles.blogArticle}>
-            <button
-              type="button"
-              className={styles.backArrowButton}
-              onClick={handleBackArrowClick}
-              aria-label="Back to home"
-            >
-              ←
-            </button>
-            <div className={styles.blogHeader}>
-              <h1 className={styles.blogTitle}>{activeArticle.title}</h1>
-              {activeArticle.subtitle ? (
-                <p className={styles.blogSubtitle}>{activeArticle.subtitle}</p>
-              ) : null}
-              <p className={styles.blogMeta}>
-                {activeArticle.date} · {activeArticle.readTime}
-              </p>
-            </div>
-          </article>
+          <EntryDetail entry={activeEntry} onBack={handleBackArrowClick} />
         </div>
       </main>
     );
@@ -232,7 +321,10 @@ function Face() {
 
         <div className={styles.container}>
           <article>
-            <ul>
+            <p className={styles.tagline}>
+              Student — trying a bunch of things
+            </p>
+            <ul className={styles.contactList}>
               <li>huett054@umn.edu</li>
               <li>
                 <a
@@ -256,92 +348,48 @@ function Face() {
           <section>
             <h2>Work Experience</h2>
             <hr />
-
-            <article>
-              <ul className={`${styles.tight} ${styles.experienceList}`}>
-                {EXPERIENCE_ENTRIES.map((experience) => (
-                  <li key={experience.slug}>
-                    <a
-                      href={`#/experience/${experience.slug}`}
-                      className={styles.experienceCardLink}
-                      onClick={handleDetailLinkClick}
-                    >
-                      <span className={styles.cardMain}>
-                        <span className={styles.cardTitle}>
-                          {experience.role}
-                        </span>
-                        <span className={styles.cardSub}>
-                          {experience.company}
-                        </span>
-                      </span>
-                      <span className={styles.cardMeta}>
-                        <span className={styles.cardMetaPrimary}>
-                          {experience.location}
-                        </span>
-                        <span className={styles.cardMetaSecondary}>
-                          {experience.date}
-                        </span>
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </article>
+            <ul className={styles.rowList}>
+              {EXPERIENCE_ENTRIES.map((entry) => (
+                <EntryRow
+                  key={entry.slug}
+                  entry={entry}
+                  onClick={handleDetailLinkClick}
+                />
+              ))}
+            </ul>
           </section>
 
           <section>
-            <h2>Blog</h2>
+            <h2>Side Quests / Projects</h2>
             <hr />
-            <article>
-              <ul className={`${styles.tight} ${styles.experienceList}`}>
-                {BLOG_ENTRIES.map((post) => (
-                  <li key={post.slug}>
-                    <a
-                      href={`#/blog/${post.slug}`}
-                      className={styles.experienceCardLink}
-                      onClick={handleDetailLinkClick}
-                    >
-                      <span className={styles.cardMain}>
-                        <span className={styles.cardTitle}>{post.title}</span>
-                      </span>
-                      <span className={styles.cardMeta}>
-                        <span className={styles.cardMetaPrimary}>
-                          {post.date}
-                        </span>
-                        <span className={styles.cardMetaSecondary}>
-                          {post.readTime}
-                        </span>
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </article>
+            <ul className={styles.rowList}>
+              {SIDE_QUEST_ENTRIES.map((entry) => (
+                <EntryRow
+                  key={entry.slug}
+                  entry={entry}
+                  onClick={handleDetailLinkClick}
+                />
+              ))}
+            </ul>
           </section>
 
           <section>
             <h2>Education</h2>
             <hr />
-
-            <article>
-              <ul className={`${styles.tight} ${styles.experienceList}`}>
-                <li>
-                  <div className={styles.experienceCardStatic}>
-                    <span className={styles.cardMain}>
-                      <span className={styles.cardTitle}>
-                        Bachelor of Science, Computer Science
-                      </span>
-                      <span className={styles.cardSub}>
-                        University of Minnesota
-                      </span>
-                    </span>
-                    <span className={styles.cardMeta}>
-                      <span className={styles.cardMetaPrimary}>Minneapolis</span>
-                    </span>
-                  </div>
-                </li>
-              </ul>
-            </article>
+            <ul className={styles.rowList}>
+              {EDUCATION_ENTRIES.map((entry) => (
+                <EntryRow
+                  key={entry.school}
+                  plain
+                  entry={{
+                    year: entry.year,
+                    company: entry.school,
+                    role: entry.degree,
+                    location: entry.location,
+                  }}
+                />
+              ))}
+            </ul>
           </section>
 
           <section>
@@ -360,7 +408,20 @@ function Face() {
             </article>
           </section>
 
-          <footer />
+          <footer className={styles.footer}>
+            <p>☆</p>
+            <p>Always happy to talk, say hi!</p>
+            <p>
+              <a href="mailto:huett054@umn.edu">Email</a>{' '}
+              <a
+                href="https://www.linkedin.com/in/colehuetten/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                LinkedIn
+              </a>
+            </p>
+          </footer>
         </div>
       </div>
     </main>
