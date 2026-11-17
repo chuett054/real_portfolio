@@ -250,6 +250,124 @@ h1.detailTitle {
   background: rgba(255, 255, 255, 0.6);
 }
 
+/* long-form write-up on a detail page */
+.detailBody {
+  margin-top: 32px;
+  padding-top: 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 0.5em;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.detailBody p {
+  margin: 0 0 20px;
+}
+
+.detailFigure {
+  margin: 28px 0 32px;
+}
+
+.detailFigure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* section heading inside a write-up (overrides the global h2 spacing) */
+h2.detailHeading {
+  margin: 44px 0 14px;
+  font-size: 1.25em;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.detailBody > h2.detailHeading:first-child {
+  margin-top: 0;
+}
+
+/* images side by side at their natural shape (no cropping) */
+.gallery {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 10px;
+  align-items: start;
+  margin: 24px 0 8px;
+}
+
+.gallery img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* photo grid */
+.photoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 28px 0 8px;
+}
+
+.photo {
+  margin: 0;
+}
+
+.photo img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.photo figcaption {
+  margin-top: 6px;
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.photoSlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 10px;
+  font-size: 0.8em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.detailListTitle {
+  margin-top: 32px;
+  color: #ffffff;
+}
+
+.detailBodyList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detailBodyList li {
+  position: relative;
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+
+.detailBodyList li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.82em;
+  width: 10px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
 /* ---------- Entry cards ---------- */
 
 .rowList {
@@ -343,6 +461,22 @@ a.rowLink:focus-visible .rowArrow {
 }
 
 @media only screen and (max-width: 767px) {
+  h2.detailHeading {
+    margin-top: 36px;
+  }
+
+  .photoGrid {
+    gap: 8px;
+  }
+
+  .detailBody {
+    font-size: 0.85em;
+  }
+
+  .detailBodyList li {
+    padding-left: 18px;
+  }
+
   .detailPage {
     padding-top: 8px;
   }

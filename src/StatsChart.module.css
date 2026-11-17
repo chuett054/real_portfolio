@@ -1,0 +1,189 @@
+.widget {
+  margin: 28px 0 32px;
+  padding: 20px 20px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ---------- tabs ---------- */
+
+.tabs {
+  display: flex;
+  gap: 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.tab {
+  position: relative;
+  margin: 0;
+  padding: 0 0 10px;
+  border: 0;
+  background: none;
+  color: rgba(255, 255, 255, 0.6);
+  font: inherit;
+  font-size: 0.95em;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.tab:hover,
+.tab:focus-visible {
+  color: #ffffff;
+}
+
+.tab:focus-visible {
+  outline: 1px solid #ffffff;
+  outline-offset: 4px;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: #ffffff;
+  transform: scaleX(0);
+  transition: transform 180ms ease;
+}
+
+.tabActive {
+  color: #ffffff;
+}
+
+.tabActive::after {
+  transform: scaleX(1);
+}
+
+/* ---------- headline number ---------- */
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 18px 0 8px;
+}
+
+.total {
+  font-size: 2.6em;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.caption {
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- chart ---------- */
+
+.plot {
+  position: relative;
+  width: 100%;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-dasharray: 3 4;
+}
+
+.gridLabel {
+  fill: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
+}
+
+.baseline {
+  stroke: rgba(255, 255, 255, 0.35);
+}
+
+.area {
+  fill: rgba(255, 255, 255, 0.1);
+  transition: d 300ms ease;
+}
+
+.line {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition: d 300ms ease;
+}
+
+.guide {
+  stroke: rgba(255, 255, 255, 0.5);
+  stroke-dasharray: 3 3;
+}
+
+.dot {
+  fill: var(--main-bg-color);
+  stroke: #ffffff;
+  stroke-width: 2;
+  transition: r 120ms ease, cy 300ms ease;
+}
+
+.dotActive {
+  fill: #ffffff;
+}
+
+.monthLabel {
+  fill: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+}
+
+.monthLabelActive {
+  fill: #ffffff;
+}
+
+.hit {
+  fill: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+/* ---------- tooltip ---------- */
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--main-bg-color);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.tooltipValue {
+  font-size: 1em;
+  line-height: 1.1;
+}
+
+.tooltipLabel {
+  font-size: 0.75em;
+  line-height: 1.1;
+  opacity: 0.75;
+}
+
+@media only screen and (max-width: 767px) {
+  .widget {
+    padding: 16px 14px 12px;
+  }
+
+  .total {
+    font-size: 2.2em;
+  }
+}

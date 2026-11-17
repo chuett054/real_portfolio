@@ -1,5 +1,6 @@
 import * as React from 'react';
 import styles from './Content.module.css';
+import StatsChart from './StatsChart';
 
 const EXPERIENCE_ENTRIES = [
   {
@@ -44,9 +45,64 @@ const SIDE_QUEST_ENTRIES = [
   {
     slug: 'ironman',
     year: '2026',
+    date: '2026 – Present',
     company: 'Ironman Training',
     blurb: 'Training to swim, bike, and run an Ironman triathlon',
-    bullets: [], // add details here
+    bullets: [],
+    content: [
+      { type: 'h', text: 'Why' },
+      {
+        type: 'p',
+        text: "I am currently training to become an Ironman. An Ironman is a 2.4 mile swim, a 112 mile bike, and a 26.2 mile run, all in one race.",
+      },
+      {
+        type: 'p',
+        text: "I don't really know why I got into the sport, but some of my earliest memories are watching my dad at his races, so that probably contributes to it. I have never liked endurance sports either, so it's a bit strange.",
+      },
+      { type: 'h', text: 'The goal' },
+      {
+        type: 'p',
+        text: "My goal is to go back to my study abroad location in Copenhagen, Denmark to complete my first full-length Ironman in 2027. Copenhagen is very flat, so it's considered an easy bike and run compared to the other locations.",
+      },
+      { type: 'h', text: 'My first triathlon' },
+      {
+        type: 'p',
+        text: 'Nov 15, 2026 · Tampa, FL · International distance (quarter Ironman): 0.5 mile swim, 20 mile bike, 6.2 mile run',
+      },
+      {
+        type: 'p',
+        text: 'My goals were to finish, swim in under 20 minutes, bike in under 1 hour, and run in under 1 hour.',
+      },
+      {
+        type: 'p',
+        text: 'My splits were 17:18 swim (hit), 1:02:11 bike (slight miss), and 58:58 run (hit).',
+      },
+      {
+        type: 'p',
+        text: 'I finished 2nd/8 participants in my age group, which hurts even more because first place was only 6 minutes faster.',
+      },
+      {
+        type: 'gallery',
+        items: [
+          {
+            src: '/ironman-lagoon-podium.jpg',
+            alt: 'Cole on the second-place podium step holding a medal at the Lagoon Triathlon',
+          },
+          {
+            src: '/ironman-lagoon-results.jpg',
+            alt: 'Results for Male 20–24: Cole Huetten in 2nd place out of 8',
+          },
+        ],
+      },
+      { type: 'h', text: 'Upcoming' },
+      {
+        type: 'list',
+        items: [
+          'Apr 4, 2027 · IRONMAN 70.3 Oceanside, CA (half Ironman): 1.2 mile swim, 56 mile bike, 13.1 mile run',
+          '2027 · IRONMAN Copenhagen, Denmark (full Ironman): 2.4 mile swim, 112 mile bike, 26.2 mile run',
+        ],
+      },
+    ],
   },
   {
     slug: 'boom-supersonic',
@@ -73,10 +129,92 @@ const SIDE_QUEST_ENTRIES = [
   {
     slug: 'blackout-detail',
     year: '2022',
-    date: '2022 – 2023',
+    date: '2022 – Present',
     company: 'Blackout Detail',
     blurb: "I started and ran a company that cleaned cars at the customer's home",
-    bullets: [], // add details here
+    bullets: [],
+    // Longer write-up, in order. Block types: h, p, img, gallery, photos, stats, list.
+    content: [
+      { type: 'h', text: 'Why I started' },
+      {
+        type: 'p',
+        text: 'I founded Blackout Detail during high school in order to pay for college.',
+      },
+      { type: 'h', text: 'The timing' },
+      {
+        type: 'p',
+        text: 'I started the company in 2022 (the red arrow seen below) before mobile detailing took off in popularity around the beginning of 2026, as you can see by the spike in internet traffic searching for mobile detailing.',
+      },
+      {
+        type: 'img',
+        src: '/blackout-trends.png',
+        alt: 'Google Trends chart of US search interest in "mobile detailing" from 2004 to now, with a red arrow at 2022 and a large spike in early 2026',
+      },
+      { type: 'h', text: 'Growing it' },
+      {
+        type: 'p',
+        text: 'At the business peak, I employed 6 people and owned a fleet of 3 vans/trailers and generated profit well into 6 figures in just under 3 years.',
+      },
+      {
+        type: 'p',
+        text: 'I also attempted to lease a shop, which entailed hours upon hours of cold emailing (who would ever let a minor do that). In hindsight, it was a great choice not to do that.',
+      },
+      {
+        type: 'photos',
+        // Add photos here: { src: '/blackout-1.jpg', alt: 'What the photo shows', caption: 'Optional caption' }
+        // Put the image files in the public/ folder. Empty slots only show on the dev server.
+        items: [],
+        slots: 4,
+      },
+      { type: 'h', text: 'Today' },
+      {
+        type: 'p',
+        text: "I hardly run the business anymore (I'll detail friends' and family's cars from time to time), but I still get a bunch of calls and website clicks from people who find it on Google. The chart below shows the numbers from my business's Google Business Profile analytics.",
+      },
+      {
+        type: 'stats',
+        tabs: [
+          {
+            key: 'calls',
+            label: 'Calls',
+            unit: 'calls',
+            caption: 'Calls from my Google Business Profile, Jun – Nov 2026',
+            data: [
+              { label: 'Jun', fullLabel: 'Jun 2026', value: 47 },
+              { label: 'Jul', fullLabel: 'Jul 2026', value: 70 },
+              { label: 'Aug', fullLabel: 'Aug 2026', value: 72 },
+              { label: 'Sep', fullLabel: 'Sep 2026', value: 50 },
+              { label: 'Oct', fullLabel: 'Oct 2026', value: 59 },
+              { label: 'Nov', fullLabel: 'Nov 2026', value: 9, partial: true },
+            ],
+          },
+          {
+            key: 'clicks',
+            label: 'Website clicks',
+            unit: 'clicks',
+            caption: 'Website clicks from my Google Business Profile, Jun – Nov 2026',
+            data: [
+              { label: 'Jun', fullLabel: 'Jun 2026', value: 13 },
+              { label: 'Jul', fullLabel: 'Jul 2026', value: 13 },
+              { label: 'Aug', fullLabel: 'Aug 2026', value: 18 },
+              { label: 'Sep', fullLabel: 'Sep 2026', value: 13 },
+              { label: 'Oct', fullLabel: 'Oct 2026', value: 7 },
+              { label: 'Nov', fullLabel: 'Nov 2026', value: 0, partial: true },
+            ],
+          },
+        ],
+      },
+      { type: 'h', text: 'Other cool/funny things' },
+      {
+        type: 'list',
+        items: [
+          'I detailed 2 cars over $300,000 USD',
+          'I once crashed a car that I was detailing',
+          'I had a partnership with the Minnesota Vikings',
+          "My Google business page got shut down multiple times because I wouldn't respond to enough people fast enough",
+        ],
+      },
+    ],
   },
 ];
 
@@ -178,6 +316,92 @@ function restoreHomeScrollDepth() {
   }
 }
 
+// Photo grid. Until photos are added, dashed placeholder slots show on the
+// dev server only, so the live site never shows empty boxes.
+function PhotoGrid({ items, slots = 0 }) {
+  const showPlaceholders = process.env.NODE_ENV === 'development';
+  const emptySlots = showPlaceholders ? Math.max(slots - items.length, 0) : 0;
+
+  if (!items.length && !emptySlots) {
+    return null;
+  }
+
+  return (
+    <div className={styles.photoGrid}>
+      {items.map((photo) => (
+        <figure key={photo.src} className={styles.photo}>
+          <img src={photo.src} alt={photo.alt} loading="lazy" />
+          {photo.caption ? <figcaption>{photo.caption}</figcaption> : null}
+        </figure>
+      ))}
+      {Array.from({ length: emptySlots }, (_, i) => (
+        <div key={`slot-${i}`} className={styles.photoSlot}>
+          Photo {items.length + i + 1}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DetailContent({ blocks }) {
+  return (
+    <div className={styles.detailBody}>
+      {blocks.map((block, index) => {
+        if (block.type === 'img') {
+          return (
+            <figure key={index} className={styles.detailFigure}>
+              <img src={block.src} alt={block.alt} loading="lazy" />
+            </figure>
+          );
+        }
+
+        if (block.type === 'h') {
+          return (
+            <h2 key={index} className={styles.detailHeading}>
+              {block.text}
+            </h2>
+          );
+        }
+
+        if (block.type === 'gallery') {
+          return (
+            <div key={index} className={styles.gallery}>
+              {block.items.map((photo) => (
+                <img key={photo.src} src={photo.src} alt={photo.alt} loading="lazy" />
+              ))}
+            </div>
+          );
+        }
+
+        if (block.type === 'photos') {
+          return <PhotoGrid key={index} items={block.items} slots={block.slots} />;
+        }
+
+        if (block.type === 'stats') {
+          return <StatsChart key={index} tabs={block.tabs} />;
+        }
+
+        if (block.type === 'list') {
+          return (
+            <div key={index}>
+              {block.title ? (
+                <p className={styles.detailListTitle}>{block.title}</p>
+              ) : null}
+              <ul className={styles.detailBodyList}>
+                {block.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          );
+        }
+
+        return <p key={index}>{block.text}</p>;
+      })}
+    </div>
+  );
+}
+
 function EntryDetail({ entry, onBack }) {
   const meta = [entry.date || entry.year, entry.location].filter(Boolean);
 
@@ -205,6 +429,8 @@ function EntryDetail({ entry, onBack }) {
           ))}
         </ul>
       ) : null}
+
+      {entry.content ? <DetailContent blocks={entry.content} /> : null}
     </article>
   );
 }
