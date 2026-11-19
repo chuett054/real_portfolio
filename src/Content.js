@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styles from './Content.module.css';
 import StatsChart from './StatsChart';
+import AskCole from './AskCole';
 
 const EXPERIENCE_ENTRIES = [
   {
@@ -10,7 +11,36 @@ const EXPERIENCE_ENTRIES = [
     company: 'Cloudflare',
     location: 'San Francisco',
     role: 'Product Manager Intern',
-    bullets: [], // add details here
+    bullets: [],
+    content: [
+      { type: 'h', text: 'AI Search' },
+      {
+        type: 'p',
+        text: "At Cloudflare, I was a product manager on the AI Search team. AI Search is Cloudflare's managed search product: you point it at your data, like files in a storage bucket or a website, and it handles the indexing, embeddings, and retrieval, so developers can add AI answers grounded in their own content to an app with a few lines of code.",
+      },
+      { type: 'h', text: 'Try it' },
+      {
+        type: 'p',
+        text: 'You can try my product here. Ask a question like "When is Cole doing an Ironman?" It runs on a real AI Search instance that searches a set of documents about me, built from this site.',
+      },
+      {
+        type: 'ask',
+        suggestions: [
+          'When is Cole doing an Ironman?',
+          'How big did Blackout Detail get?',
+          'What did Cole work on at Cloudflare?',
+        ],
+      },
+      {
+        type: 'p',
+        text: 'This is just a demo, but the product has a bunch of use cases, including support chatbots that answer from help docs, internal knowledge-base search, documentation search, and product search.',
+      },
+      { type: 'h', text: 'My summer' },
+      {
+        type: 'p',
+        text: 'Over the summer, I talked to a bunch of customers, including Chick-fil-A and Thrive Capital, and worked on a dashboard redesign and on increasing the accuracy of our product with physical documents (OCR).',
+      },
+    ],
   },
   {
     slug: 'dis-copenhagen',
@@ -133,7 +163,7 @@ const SIDE_QUEST_ENTRIES = [
     company: 'Blackout Detail',
     blurb: "I started and ran a company that cleaned cars at the customer's home",
     bullets: [],
-    // Longer write-up, in order. Block types: h, p, img, gallery, photos, stats, list.
+    // Longer write-up, in order. Block types: h, p, img, gallery, photos, stats, ask, list.
     content: [
       { type: 'h', text: 'Why I started' },
       {
@@ -300,14 +330,21 @@ function restoreHomeScrollDepth() {
     return;
   }
 
-  const applyScroll = () => window.scrollTo(0, Math.max(targetScroll, 0));
+  // The home page's scroll height is recalculated a few frames after the
+  // route changes (see App.js), so a single scrollTo gets clamped near the
+  // top. Keep re-applying until the position sticks, for up to ~1.5s.
+  const target = Math.max(targetScroll, 0);
+  const startedAt = performance.now();
 
-  window.requestAnimationFrame(() => {
-    window.requestAnimationFrame(() => {
-      applyScroll();
-      window.requestAnimationFrame(applyScroll);
-    });
-  });
+  const tryScroll = () => {
+    window.scrollTo(0, target);
+    const reached = Math.abs(getCurrentScrollY() - target) < 2;
+    if (!reached && performance.now() - startedAt < 1500) {
+      window.requestAnimationFrame(tryScroll);
+    }
+  };
+
+  window.requestAnimationFrame(tryScroll);
 
   try {
     sessionStorage.removeItem(HOME_SCROLL_STORAGE_KEY);
@@ -361,6 +398,10 @@ function DetailContent({ blocks }) {
               {block.text}
             </h2>
           );
+        }
+
+        if (block.type === 'ask') {
+          return <AskCole key={index} suggestions={block.suggestions} />;
         }
 
         if (block.type === 'gallery') {

@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Same Worker that serves colehuetten.me. It serves the React build as
+  // static assets and handles /api/* itself (the "Ask about Cole" demo).
+  "name": "realportfolio",
+  "main": "worker/index.js",
+  "compatibility_date": "2025-09-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "build",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "ai_search": [
+    { "binding": "AI_SEARCH", "instance_name": "cole-portfolio", "remote": true }
+  ],
+  // Per-visitor limit so the public demo can't run up usage costs.
+  "ratelimits": [
+    {
+      "name": "ASK_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 6, "period": 60 }
+    }
+  ],
+  // Daily query so the AI Search instance isn't paused for inactivity.
+  "triggers": { "crons": ["17 15 * * *"] }
+}

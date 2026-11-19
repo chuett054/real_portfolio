@@ -17,7 +17,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "dev:api": "wrangler dev --port 8787",
+    "ai-search:sync": "sh scripts/sync-ai-search.sh"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -35,6 +37,8 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^2.2.0"
-  }
+    "gh-pages": "^2.2.0",
+    "wrangler": "^4.165.0"
+  },
+  "proxy": "http://localhost:8787"
 }
